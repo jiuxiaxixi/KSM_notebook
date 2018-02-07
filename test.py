@@ -20,7 +20,7 @@ from pyqtgraph.Qt import  QtCore
 import sys
 
 
-class Example(QMainWindow):
+class MainWindow(QMainWindow):
     timer = QtCore.QTimer()
 
     def __init__(self):
@@ -30,9 +30,9 @@ class Example(QMainWindow):
     def initUI(self):
         self.textEdit = QTextEdit()
         self.setCentralWidget(self.textEdit)
+        openFile = QAction(QIcon('open.png'), 'Open', self)
         self.statusBar()
 
-        openFile = QAction(QIcon('open.png'), 'Open', self)
         openFile.setShortcut('Ctrl+O')
         openFile.setStatusTip('Open new File')
         openFile.triggered.connect(self.showDialog)
@@ -57,10 +57,7 @@ class Example(QMainWindow):
             self.timer.start(100)
 
     def update(self):
-        #print("time is up")
-        #print(self.filename)
         data = self.f.readlines()
-        #print("read")
         if len(data) > 0:
             self.text_append(data)
             print("new data %d", len(data))
@@ -69,8 +66,12 @@ class Example(QMainWindow):
         for line in range(len(text_list)):
             data=text_list[line].strip('\n')
             self.textEdit.append(data)
+            if(len(text_list))
+
+    def text_resvole(self,text_list):
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = Example()
+    ex = MainWindow()
     sys.exit(app.exec_())
