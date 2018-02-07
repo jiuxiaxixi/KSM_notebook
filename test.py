@@ -57,7 +57,6 @@ class Example(QMainWindow):
             self.timer.start(100)
 
     def update(self):
-        print("test")
         #print("time is up")
         #print(self.filename)
         data = self.f.readlines()
