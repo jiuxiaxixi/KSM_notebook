@@ -12,7 +12,10 @@ class CAN_FRAME() :
         for line in range(len(lines)):
             self.line_res(lines[line].strip('\n'))
         canframe = pd.DataFrame(np.array(self.l), columns=['time', 'id', 'd0', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'count'])
-        print(canframe['d0'])
+        #16 进制转换为10进制
+        canframe=canframe[['d0', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7']].applymap(self.hex_to_dec)
+        print(canframe)
+
     def  line_res(self, line):
         if len(line)>45:
             #分割为List
@@ -27,6 +30,9 @@ class CAN_FRAME() :
             #print(line[0:8])
             #self.canframe['time']=line[0:8]
             #print(self.canframe)
+
+    def hex_to_dec(self, x):
+        return int(x, 16)
 
 f = open('2017.txt', 'r', encoding='utf-8')
 CAN_FRAME().lines_res(f.readlines())
