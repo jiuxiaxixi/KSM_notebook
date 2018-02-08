@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (QMainWindow, QTextEdit,
 from PyQt5.QtGui import QIcon
 from pyqtgraph.Qt import  QtCore
 import sys
+from can_frame_res import CAN_FRAME
 
 
 class MainWindow(QMainWindow):
@@ -49,12 +50,14 @@ class MainWindow(QMainWindow):
     def showDialog(self):
         fname = QFileDialog.getOpenFileName(self, 'Open file')
         self.filename=fname
-        print(fname)
         if fname[0]:
             self.f = open(fname[0], 'r', encoding='utf-8')
-            data=self.f.readlines()
-            self.text_append(data)
-            self.timer.start(100)
+            dataframe = CAN_FRAME().get_dataframe_original(self.f.readlines())
+            #print(dataframe.to_string())
+            self.textEdit.append(dataframe.to_html())
+            #self.text_append()
+            #print(CAN_FRAME.dataframe_to_int(data))
+            #self.timer.start(100)
 
     def update(self):
         data = self.f.readlines()
@@ -65,10 +68,9 @@ class MainWindow(QMainWindow):
     def text_append(self, text_list):
         for line in range(len(text_list)):
             data=text_list[line].strip('\n')
-            self.textEdit.append(data)
-            if(len(text_list))
+            print(data)
+            #self.textEdit.append(data)
 
-    def text_resvole(self,text_list):
 
 
 if __name__ == '__main__':
