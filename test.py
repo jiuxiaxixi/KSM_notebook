@@ -16,7 +16,7 @@ Last edited: August 2017
 from PyQt5.QtWidgets import (QMainWindow, QTextEdit,
                              QAction, QFileDialog, QApplication)
 from PyQt5.QtGui import QIcon
-from pyqtgraph.Qt import  QtCore
+from pyqtgraph.Qt import QtCore
 import sys
 from can_frame_res import CAN_FRAME
 
