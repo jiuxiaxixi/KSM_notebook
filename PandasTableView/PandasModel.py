@@ -2,11 +2,13 @@ from PyQt5 import QtCore
 
 import pandas as pd
 
-
-class PandasModel(QtCore.QAbstractTableModel): 
-    def __init__(self, df = pd.DataFrame(), parent=None): 
+class PandasModel(QtCore.QAbstractTableModel):
+    def __init__(self, df = pd.DataFrame(), parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent=parent)
         self._df = df
+
+    def setDataFrame(self, df):
+        self._df = df;
 
     def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
         if role != QtCore.Qt.DisplayRole:
@@ -33,6 +35,10 @@ class PandasModel(QtCore.QAbstractTableModel):
 
         return QtCore.QVariant(str(self._df.ix[index.row(), index.column()]))
 
+    def flags(self, index):
+            flags = QtCore.QAbstractTableModel.flags(self, index)
+            return flags
+
     def setData(self, index, value, role):
         row = self._df.index[index.row()]
         col = self._df.columns[index.column()]
@@ -47,15 +53,26 @@ class PandasModel(QtCore.QAbstractTableModel):
         self._df.set_value(row, col, value)
         return True
 
-    def rowCount(self, parent=QtCore.QModelIndex()): 
+    def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self._df.index)
 
-    def columnCount(self, parent=QtCore.QModelIndex()): 
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return len(self._df.columns)
 
     def sort(self, column, order):
-        colname = self._df.columns.tolist()[column]
+        colname = self._df.columns.values[column]
         self.layoutAboutToBeChanged.emit()
         self._df.sort_values(colname, ascending= order == QtCore.Qt.AscendingOrder, inplace=True)
-        self._df.reset_index(inplace=True, drop=True)
+        self._df.reset_index(inplace=True, drop=True) # <-- this is the change
         self.layoutChanged.emit()
+
+    def updateDisplay(self, df):
+        self.layoutAboutToBeChanged.emit()
+        self._df = self._df.append(df, ignore_index=True) #change data
+        self.layoutChanged.emit()
+
+    def getDateFrame(self):
+        return self._df
+
+    def getAframe(self, row):
+        return self._df.T[row].to_string()

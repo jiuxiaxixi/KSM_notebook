@@ -3,6 +3,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PandasModel import PandasModel
 from can_frame_res import CAN_FRAME
 
+class Filter(QtCore.QObject):
+    def __init__(self):
+        super(QtCore.QObject, self).__init__()
+
+    def eventFilter(self, obj, event):
+        print (event.type())
+        return False
+
 class Widget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent=None)
@@ -15,8 +23,16 @@ class Widget(QtWidgets.QWidget):
         vLayout.addLayout(hLayout)
         self.pandasTv = QtWidgets.QTableView(self)
         vLayout.addWidget(self.pandasTv)
+        self.commandTransLE = QtWidgets.QLineEdit(self)
+        vLayout.addWidget(self.commandTransLE)
         self.loadBtn.clicked.connect(self.loadFile)
-        self.pandasTv.setSortingEnabled(True)
+        #self.pandasTv.setMouseTracking(True)
+        #self.pandasTv.setSortingEnabled(True)
+        # self.pandasTv.setAttribute(84 ,on=True)
+        # self.pandasTv.clicked.connect(self.itemClick)
+        #self.filter=Filter()
+        #self.pandasTv.installEventFilter(self.filter)
+        self.pandasTv.clicked.connect(self.cell_was_clicked)
 
     def loadFile(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)");
@@ -24,30 +40,28 @@ class Widget(QtWidgets.QWidget):
         #df = pd.read_csv(fileName)
         self.f = open(fileName, 'r', encoding='utf-8')
         dataframe = CAN_FRAME().get_dataframe_original(self.f.readlines())
-        model = PandasModel(dataframe)
-        self.pandasTv.setModel(model)
+        self.model = PandasModel(dataframe)
+        self.pandasTv.setModel(self.model)
         self.setTableSize(70, 70, 40, self.pandasTv)
 
     def setTableSize(self, timeSize, idSize, dataSize, table):
         table.setColumnWidth(0, timeSize)
         table.setColumnWidth(1, idSize)
         for i in range(2, 11):
-            table.setColumnWidth(i,dataSize)
-        #table.setFixedWidth()
+            table.setColumnWidth(i, dataSize)
+
         table.setMinimumSize(timeSize+idSize+dataSize*10+15,300)
         self.pandasTv.scrollToBottom()
-        #self.pandasTv.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
-       # self.pandasTv.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff)
-       # self.pandasTv.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff)
 
-        #self.pandasTv.resizeColumnsToContents()
-        #self.pandasTv.setFixedSize(
-            #self.pandasTv.horizontalHeader().length() + self.pandasTv.verticalHeader().width(), self.pandasTv.verticalHeader().length() + self.pandasTv.horizontalHeader().height())
+    #获取model中的数据和
+    def cell_was_clicked(self, item):
+        cellContent = item.data()
+        cellrow = item.row()
+        #print()  # test
+        sf = "You clicked on {}".format(cellContent)+" ".format(cellrow)
+        self.commandTransLE.setText(self.model.getAframe(item.row()))
 
-       # header = self.pandasTv.horizontalHeader()
-        #header.setResizeMode(0, QtGui.QHeaderView.ResizeToContents)
-        #header.setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
-        #header.setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
+
 
 if __name__ == "__main__":
     import sys
