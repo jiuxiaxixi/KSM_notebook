@@ -75,4 +75,11 @@ class PandasModel(QtCore.QAbstractTableModel):
         return self._df
 
     def getAframe(self, row):
-        return self._df.T[row].to_string()
+        #self.command_res(self._df.iloc[row].tolist())
+
+        return " ".join(str(x) for x in self._df.iloc[row].tolist())
+
+    def command_res(self, list):
+        for i in len(list):
+            s = s,list[i]
+        print(s)
