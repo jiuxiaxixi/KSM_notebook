@@ -32,7 +32,8 @@ class PandasModel(QtCore.QAbstractTableModel):
 
         if not index.isValid():
             return QtCore.QVariant()
-
+        if str(self._df.ix[index.row(), index.column()]) == '0':
+            return  ' '
         return QtCore.QVariant(str(self._df.ix[index.row(), index.column()]))
 
     def flags(self, index):

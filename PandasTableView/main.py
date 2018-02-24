@@ -4,6 +4,7 @@ from PandasModel import PandasModel
 
 import pandas as pd
 import numpy as np
+import pyqtgraph as pg
 
 
 class CAN_FRAME() :
@@ -23,7 +24,7 @@ class CAN_FRAME() :
                 buf.remove('')
             #add zeros to fit the size
             while len(buf) < 11:
-                buf.insert(len(buf)-1, '0')
+                buf.insert(len(buf)-1, ' ')
             if( len(buf) == 11):
                 list.append(buf)
 
@@ -70,7 +71,8 @@ class Widget(QtWidgets.QWidget):
         self.autoReFlashBtn.stateChanged.connect(self.autoReFlashBtnCheck)
         self.timer.timeout.connect(self.update)
         self.autoReFlashBtn.toggle()
-
+        plot = pg.PlotWidget()
+        vLayout.addWidget(plot)
 
     def loadFile(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)");
@@ -79,7 +81,7 @@ class Widget(QtWidgets.QWidget):
         dataframe = CAN_FRAME().get_dataframe_original(self.f.readlines())
         self.model = PandasModel(dataframe)
         self.pandasTv.setModel(self.model)
-       # self.setTableSize(70, 70, 30, 40, self.pandasTv)
+        #self.setTableSize(70, 70, 30, 40, self.pandasTv)
         self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.fileisLoad = True
         self.autoFlashTimerchange()
@@ -96,13 +98,9 @@ class Widget(QtWidgets.QWidget):
 
         self.pandasTv.scrollToBottom()
 
-        self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView().ResizeToContents)
+        #self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView().ResizeToContents)
 
     def cell_was_clicked(self, item):
-        cellContent = item.data()
-        cellrow = item.row()
-        #print()  # test
-        sf = "You clicked on {}".format(cellContent)+" ".format(cellrow)
         self.commandTransLE.setText(self.model.getAframe(item.row()))
 
     def autoReFlashBtnCheck(self):
