@@ -49,7 +49,7 @@ class CAN_FRAME() :
 
 class Widget(QtWidgets.QWidget):
     timer = QtCore.QTimer()
-
+    timer2 = QtCore.QTimer()
     def __init__(self, parent=None):
         self.fileisLoad = False
         QtWidgets.QWidget.__init__(self, parent=None)
@@ -71,14 +71,27 @@ class Widget(QtWidgets.QWidget):
         self.autoReFlashBtn.stateChanged.connect(self.autoReFlashBtnCheck)
         self.timer.timeout.connect(self.update)
         self.autoReFlashBtn.toggle()
-        plot = pg.PlotWidget()
-        vLayout.addWidget(plot)
+        self.plot = pg.PlotWidget(title="Updating plot")
+        vLayout.addWidget(self.plot)
+        #self.curve = self.plot.plot(1, clickable=True)
+        #self.curve.curve.setClickable(True)
+        #self.curve.setPen('y')  ## white pen
+        #curve.setShadowPen(pg.mkPen((70,70,30), width=6, cosmetic=True))
+
 
     def loadFile(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)");
         self.pathLE.setText(fileName)
         self.f = open(fileName, 'r', encoding='utf-8')
         dataframe = CAN_FRAME().get_dataframe_original(self.f.readlines())
+        print(dataframe['d2'].as_matrix())
+        self.curve = self.plot.plot( dataframe['d1'].astype('int32').values, clickable=True)
+        #self.curve = self.plot.plot( dataframe['d1'].astype('int32').values, clickable=True)
+        #self.curve = self.plot.plot(1, clickable=True)
+        #self.curve.curve.setClickable(True)
+        #self.curve.setPen('y')  ## white pen
+
+
         self.model = PandasModel(dataframe)
         self.pandasTv.setModel(self.model)
         #self.setTableSize(70, 70, 30, 40, self.pandasTv)
@@ -122,9 +135,17 @@ class Widget(QtWidgets.QWidget):
 
     def update(self):
         data = self.f.readlines()
+        self.plotUpdate(1)
         if len(data) > 0:
             self.model.updateDisplay(CAN_FRAME().get_dataframe_original(data))
             self.pandasTv.scrollToBottom()
+
+
+    def plotUpdate(self, data):
+        #self.index += 1
+        print ('update')
+
+
 
 if __name__ == "__main__":
     import sys
