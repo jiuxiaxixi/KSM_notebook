@@ -77,7 +77,7 @@ class Widget(QtWidgets.QWidget):
         #self.curve.curve.setClickable(True)
         #self.curve.setPen('y')  ## white pen
         #curve.setShadowPen(pg.mkPen((70,70,30), width=6, cosmetic=True))
-
+        self.times = 0
 
     def loadFile(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)");
@@ -85,7 +85,8 @@ class Widget(QtWidgets.QWidget):
         self.f = open(fileName, 'r', encoding='utf-8')
         dataframe = CAN_FRAME().get_dataframe_original(self.f.readlines())
         print(dataframe['d2'].as_matrix())
-        self.curve = self.plot.plot( dataframe['d1'].astype('int32').values, clickable=True)
+        self.curve = self.plot.plot()
+        self.curve.setPen((200,200,100))
         #self.curve = self.plot.plot( dataframe['d1'].astype('int32').values, clickable=True)
         #self.curve = self.plot.plot(1, clickable=True)
         #self.curve.curve.setClickable(True)
@@ -93,7 +94,11 @@ class Widget(QtWidgets.QWidget):
 
 
         self.model = PandasModel(dataframe)
-        self.pandasTv.setModel(self.model)
+        self.proxyModel = QtCore.QSortFilterProxyModel()
+        self.proxyModel.setSourceModel(self.model)
+        self.pandasTv.setModel(self.proxyModel)
+        self.proxyModel.setFilterKeyColumn(2)
+        self.proxyModel.setFilterRegExp('A1')
         #self.setTableSize(70, 70, 30, 40, self.pandasTv)
         self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.fileisLoad = True
@@ -135,15 +140,32 @@ class Widget(QtWidgets.QWidget):
 
     def update(self):
         data = self.f.readlines()
-        self.plotUpdate(1)
+        self.plotUpdate()
         if len(data) > 0:
             self.model.updateDisplay(CAN_FRAME().get_dataframe_original(data))
             self.pandasTv.scrollToBottom()
 
 
-    def plotUpdate(self, data):
-        #self.index += 1
-        print ('update')
+    def plotUpdate(self):
+         yd, xd = rand(10000)
+         print(xd)
+         self.curve.setData(y=yd, x=xd)
+
+
+
+
+
+
+def rand(n):
+    data = np.random.random(n)
+    data[int(n*0.1):int(n*0.13)] += .5
+    data[int(n*0.18)] += 2
+    data[int(n*0.1):int(n*0.13)] *= 5
+    data[int(n*0.18)] *= 20
+    data *= 1e-12
+    return data, np.arange(n, n+len(data)) / float(n)
+
+
 
 
 
