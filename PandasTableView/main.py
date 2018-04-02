@@ -73,11 +73,47 @@ class Widget(QtWidgets.QWidget):
         self.autoReFlashBtn.toggle()
         self.plot = pg.PlotWidget(title="Updating plot")
         vLayout.addWidget(self.plot)
+        self.horizontalHeader = self.pandasTv.horizontalHeader()
+        self.horizontalHeader.sectionClicked.connect(self.on_view_horizontalHeader_sectionClicked)
         #self.curve = self.plot.plot(1, clickable=True)
         #self.curve.curve.setClickable(True)
         #self.curve.setPen('y')  ## white pen
         #curve.setShadowPen(pg.mkPen((70,70,30), width=6, cosmetic=True))
         self.times = 0
+
+
+    def on_view_horizontalHeader_sectionClicked(self, logicalIndex):
+        self.logicalIndex = logicalIndex
+        self.menuValues = QtWidgets.QMenu()
+        #self.singalmapper = QtCore.QSignalMapper()
+
+        actionAll = QtWidgets.QAction("All",self)
+        actionAll.triggered.connect(self.on_actionAll_triggered)
+        self.menuValues.addAction(actionAll)
+        self.menuValues.addSeparator()
+
+        action = QtGui.QAction('A0', self)
+        action.triggered.connect(self.on_actionAll_triggered)
+        #self.singalmapper.setMapping(action,1)
+        #action.triggered.connect(self.singalmapper.map)
+        #self.menuValues.addAction(action)
+
+        #self.singalmapper.mapped.connect(self.on_signalMapper_mapped)
+        headerPos = self.pandasTv.mapToGlobal(self.horizontalHeader.pos())
+
+        posY = headerPos.y() + self.horizontalHeader.height()
+        posX = headerPos.x() + self.horizontalHeader.sectionPosition(self.logicalIndex)
+        print(posX , posY)
+        self.menuValues.exec_(QtCore.QPoint(posX, posY))
+
+    def on_actionAll_triggered(self):
+        filterColumn = self.logicalIndex
+        self.proxyModel.setFilterRegExp("")
+        self.proxyModel.setFilterKeyColumn(filterColumn)
+
+
+
+
 
     def loadFile(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)");
@@ -140,7 +176,7 @@ class Widget(QtWidgets.QWidget):
 
     def update(self):
         data = self.f.readlines()
-        self.plotUpdate()
+        #self.plotUpdate()
         if len(data) > 0:
             self.model.updateDisplay(CAN_FRAME().get_dataframe_original(data))
             self.pandasTv.scrollToBottom()
