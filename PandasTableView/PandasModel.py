@@ -75,12 +75,15 @@ class PandasModel(QtCore.QAbstractTableModel):
     def getDateFrame(self):
         return self._df
 
-    def getAframe(self, row):
-        #self.command_res(self._df.iloc[row].tolist())
-
+    # 返回一帧的字符串
+    def get_a_frame_str(self, row):
+        self.get_a_row(row)
         return " ".join(str(x) for x in self._df.iloc[row].tolist())
+
+    # 返回一行
+    def get_a_row(self, row):
+        print(self._df.iloc[row])
 
     def command_res(self, list):
         for i in len(list):
-            s = s,list[i]
-        print(s)
+            s = s, list[i]

@@ -81,7 +81,7 @@ class Widget(QtWidgets.QWidget):
         #curve.setShadowPen(pg.mkPen((70,70,30), width=6, cosmetic=True))
         self.times = 0
 
-
+        #点击表格头进行过滤功能
     def on_view_horizontalHeader_sectionClicked(self, logicalIndex):
         self.logicalIndex = logicalIndex
         self.menuValues = QtWidgets.QMenu()
@@ -155,7 +155,7 @@ class Widget(QtWidgets.QWidget):
         #self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView().ResizeToContents)
 
     def cell_was_clicked(self, item):
-        self.commandTransLE.setText(self.model.getAframe(item.row()))
+        self.commandTransLE.setText(self.model.get_a_frame_str(item.row()))
 
     def autoReFlashBtnCheck(self):
         if(self.autoReFlashBtn.isChecked()):
@@ -205,7 +205,7 @@ def rand(n):
 
 
 
-if __name__ == "__main__":
+if __name__=="__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     w = Widget()
