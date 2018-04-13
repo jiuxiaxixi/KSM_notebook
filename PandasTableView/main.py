@@ -1,10 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from PandasModel import PandasModel
-
 import pandas as pd
 import numpy as np
-import pyqtgraph as pg
 
 
 class CAN_FRAME() :
@@ -53,35 +51,28 @@ class Widget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         self.fileisLoad = False
         QtWidgets.QWidget.__init__(self, parent=None)
-        vLayout = QtWidgets.QVBoxLayout(self)
-        hLayout = QtWidgets.QHBoxLayout()
+        v_layout = QtWidgets.QVBoxLayout(self)
+        h_layout = QtWidgets.QHBoxLayout()
         self.pathLE = QtWidgets.QLineEdit(self)
-        hLayout.addWidget(self.pathLE)
+        h_layout.addWidget(self.pathLE)
         self.loadBtn = QtWidgets.QPushButton("choose", self)
-        hLayout.addWidget(self.loadBtn)
-        vLayout.addLayout(hLayout)
+        h_layout.addWidget(self.loadBtn)
+        v_layout.addLayout(h_layout)
         self.pandasTv = QtWidgets.QTableView(self)
-        vLayout.addWidget(self.pandasTv)
+        v_layout.addWidget(self.pandasTv)
         self.commandTransLE = QtWidgets.QLineEdit(self)
-        vLayout.addWidget(self.commandTransLE)
+        v_layout.addWidget(self.commandTransLE)
         self.autoReFlashBtn = QtWidgets.QCheckBox('flash',self)
-        hLayout.addWidget(self.autoReFlashBtn)
+        h_layout.addWidget(self.autoReFlashBtn)
         self.loadBtn.clicked.connect(self.loadFile)
         self.pandasTv.clicked.connect(self.cell_was_clicked)
         self.autoReFlashBtn.stateChanged.connect(self.autoReFlashBtnCheck)
         self.timer.timeout.connect(self.update)
         self.autoReFlashBtn.toggle()
-        self.plot = pg.PlotWidget(title="Updating plot")
-        vLayout.addWidget(self.plot)
         self.horizontalHeader = self.pandasTv.horizontalHeader()
         self.horizontalHeader.sectionClicked.connect(self.on_view_horizontalHeader_sectionClicked)
-        #self.curve = self.plot.plot(1, clickable=True)
-        #self.curve.curve.setClickable(True)
-        #self.curve.setPen('y')  ## white pen
-        #curve.setShadowPen(pg.mkPen((70,70,30), width=6, cosmetic=True))
         self.times = 0
 
-        #点击表格头进行过滤功能
     def on_view_horizontalHeader_sectionClicked(self, logicalIndex):
         self.logicalIndex = logicalIndex
         self.menuValues = QtWidgets.QMenu()
@@ -92,8 +83,8 @@ class Widget(QtWidgets.QWidget):
         self.menuValues.addAction(actionAll)
         self.menuValues.addSeparator()
 
-        action = QtGui.QAction('A0', self)
-        action.triggered.connect(self.on_actionAll_triggered)
+        #action = QtGui.QAction('A0', self)
+        # action.triggered.connect(self.on_actionAll_triggered)
         #self.singalmapper.setMapping(action,1)
         #action.triggered.connect(self.singalmapper.map)
         #self.menuValues.addAction(action)
@@ -111,32 +102,21 @@ class Widget(QtWidgets.QWidget):
         self.proxyModel.setFilterRegExp("")
         self.proxyModel.setFilterKeyColumn(filterColumn)
 
-
-
-
-
     def loadFile(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)");
         self.pathLE.setText(fileName)
         self.f = open(fileName, 'r', encoding='utf-8')
         dataframe = CAN_FRAME().get_dataframe_original(self.f.readlines())
         print(dataframe['d2'].as_matrix())
-        self.curve = self.plot.plot()
-        self.curve.setPen((200,200,100))
-        #self.curve = self.plot.plot( dataframe['d1'].astype('int32').values, clickable=True)
-        #self.curve = self.plot.plot(1, clickable=True)
-        #self.curve.curve.setClickable(True)
-        #self.curve.setPen('y')  ## white pen
-
-
         self.model = PandasModel(dataframe)
         self.proxyModel = QtCore.QSortFilterProxyModel()
         self.proxyModel.setSourceModel(self.model)
         self.pandasTv.setModel(self.proxyModel)
         self.proxyModel.setFilterKeyColumn(2)
-        self.proxyModel.setFilterRegExp('A1')
-        #self.setTableSize(70, 70, 30, 40, self.pandasTv)
-        self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        #self.proxyModel.setFilterRegExp('A1')
+        self.setTableSize(70, 70, 30, 40, self.pandasTv)
+        #self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView().ResizeToContents)
+        #self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.fileisLoad = True
         self.autoFlashTimerchange()
         self.pandasTv.scrollToBottom()
@@ -151,8 +131,8 @@ class Widget(QtWidgets.QWidget):
         table.setMinimumSize(timeSize+idSize+dataSize*10+countSize, 300)
 
         self.pandasTv.scrollToBottom()
-
         #self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView().ResizeToContents)
+
 
     def cell_was_clicked(self, item):
         self.commandTransLE.setText(self.model.get_a_frame_str(item.row()))
@@ -176,34 +156,9 @@ class Widget(QtWidgets.QWidget):
 
     def update(self):
         data = self.f.readlines()
-        #self.plotUpdate()
         if len(data) > 0:
             self.model.updateDisplay(CAN_FRAME().get_dataframe_original(data))
             self.pandasTv.scrollToBottom()
-
-
-    def plotUpdate(self):
-         yd, xd = rand(10000)
-         print(xd)
-         self.curve.setData(y=yd, x=xd)
-
-
-
-
-
-
-def rand(n):
-    data = np.random.random(n)
-    data[int(n*0.1):int(n*0.13)] += .5
-    data[int(n*0.18)] += 2
-    data[int(n*0.1):int(n*0.13)] *= 5
-    data[int(n*0.18)] *= 20
-    data *= 1e-12
-    return data, np.arange(n, n+len(data)) / float(n)
-
-
-
-
 
 if __name__=="__main__":
     import sys
