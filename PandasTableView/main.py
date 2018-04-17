@@ -76,25 +76,17 @@ class Widget(QtWidgets.QWidget):
     def on_view_horizontalHeader_sectionClicked(self, logicalIndex):
         self.logicalIndex = logicalIndex
         self.menuValues = QtWidgets.QMenu()
-        #self.singalmapper = QtCore.QSignalMapper()
 
         actionAll = QtWidgets.QAction("All",self)
         actionAll.triggered.connect(self.on_actionAll_triggered)
         self.menuValues.addAction(actionAll)
         self.menuValues.addSeparator()
 
-        #action = QtGui.QAction('A0', self)
-        # action.triggered.connect(self.on_actionAll_triggered)
-        #self.singalmapper.setMapping(action,1)
-        #action.triggered.connect(self.singalmapper.map)
-        #self.menuValues.addAction(action)
-
-        #self.singalmapper.mapped.connect(self.on_signalMapper_mapped)
         headerPos = self.pandasTv.mapToGlobal(self.horizontalHeader.pos())
 
         posY = headerPos.y() + self.horizontalHeader.height()
         posX = headerPos.x() + self.horizontalHeader.sectionPosition(self.logicalIndex)
-        print(posX , posY)
+        print(posX, posY)
         self.menuValues.exec_(QtCore.QPoint(posX, posY))
 
     def on_actionAll_triggered(self):
@@ -113,10 +105,7 @@ class Widget(QtWidgets.QWidget):
         self.proxyModel.setSourceModel(self.model)
         self.pandasTv.setModel(self.proxyModel)
         self.proxyModel.setFilterKeyColumn(2)
-        #self.proxyModel.setFilterRegExp('A1')
         self.setTableSize(70, 70, 30, 40, self.pandasTv)
-        #self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView().ResizeToContents)
-        #self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.fileisLoad = True
         self.autoFlashTimerchange()
         self.pandasTv.scrollToBottom()
@@ -131,7 +120,6 @@ class Widget(QtWidgets.QWidget):
         table.setMinimumSize(timeSize+idSize+dataSize*10+countSize, 300)
 
         self.pandasTv.scrollToBottom()
-        #self.pandasTv.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView().ResizeToContents)
 
 
     def cell_was_clicked(self, item):

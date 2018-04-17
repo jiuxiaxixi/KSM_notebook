@@ -1,0 +1,69 @@
+输入：ID 命令号 参数地址 参数长度
+输出：板子-模块-动作-参数解析
+
+            # 遍历当前行所有列
+            for j in range(ncols):
+                # 获取当前列中文标题
+                title_de = str(row_0[j])
+                title_cn = title_de.split("'")[1]
+                # 获取单元格的值
+                tmp[title_cn] = sheet.row_values(i)[j]
+            result["card"].append(tmp)
+
+
+                    for card in range(nrows):
+            #print(sheet.row_values(card)[0])
+            if sheet.row_values(card)[0] !='' and cardnum!=0:
+                title_de = str(sheet.row_values(card)[0])
+                # 获取单元格的值
+                tmp[title_de] = cardnum+1
+                print(tmp)
+                cardnum = 0
+            if sheet.row_values(card)[0] =='':
+                cardnum += 1
+        start = 0
+        for card in tmp2:
+            for module in range(tmp[card]):
+                ele = module + start
+                if sheet.row_values(ele)[1] != '' and cardnum != 0:
+                    title_de = str(sheet.row_values(ele)[1])
+                    # 获取单元格的值
+                    tmp2[title_de] = cardnum + 1
+                    cardnum = 0
+                if sheet.row_values(ele)[0] == '':
+                    cardnum += 1
+
+
+
+
+        test = {}
+        id = "<00-"+str(sheet.row_values(2)[8])+">"
+        command = str(sheet.row_values(2)[9])
+        info={}
+        tmp = str(sheet.row_values(2)[0])
+        print(tmp)
+        info['card']=tmp
+        tmp = str(sheet.row_values(2)[1])
+        info['module'] = tmp
+        tmp = str(sheet.row_values(2)[2])
+        info['command'] = tmp
+        print(tmp)
+        tmp = str(sheet.row_values(2)[3])
+        print(tmp)
+        print(info)
+
+        test[id,command]=info
+        print(test)
+
+        print("nrows",nrows,"ncols",ncols)
+        cards={"fg":4,'h':5}
+        b = {"fg": 4, 'h': 5}
+        result = {}  # 定义json对象
+        result["title","rows"] = cards  # 表单标题
+
+        #result["title", "rows"].append(cards)
+       # result["title", "rows"].append(b)
+        print(result)
+        print(result["title", "rows"]['h'])
+        # 遍历所有行，将excel转化为json对象
+        # 通过板卡号和命令建立新的表格
