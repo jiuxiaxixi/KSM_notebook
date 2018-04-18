@@ -1,8 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from PandasModel import PandasModel
+from KsmCommand import  KsmCommand
 import pandas as pd
 import numpy as np
+
 
 
 class CAN_FRAME() :
@@ -49,6 +51,7 @@ class Widget(QtWidgets.QWidget):
     timer = QtCore.QTimer()
     timer2 = QtCore.QTimer()
     def __init__(self, parent=None):
+        self.kc = KsmCommand('6000.xlsx')
         self.fileisLoad = False
         QtWidgets.QWidget.__init__(self, parent=None)
         v_layout = QtWidgets.QVBoxLayout(self)
@@ -123,7 +126,8 @@ class Widget(QtWidgets.QWidget):
 
 
     def cell_was_clicked(self, item):
-        self.commandTransLE.setText(self.model.get_a_frame_str(item.row()))
+        data=self.model.get_a_row(item.row())
+        self.commandTransLE.setText(self.kc.get_command_res(data['id'],data['d0']))
 
     def autoReFlashBtnCheck(self):
         if(self.autoReFlashBtn.isChecked()):
@@ -147,6 +151,7 @@ class Widget(QtWidgets.QWidget):
         if len(data) > 0:
             self.model.updateDisplay(CAN_FRAME().get_dataframe_original(data))
             self.pandasTv.scrollToBottom()
+
 
 if __name__=="__main__":
     import sys

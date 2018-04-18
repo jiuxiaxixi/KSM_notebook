@@ -82,7 +82,7 @@ class PandasModel(QtCore.QAbstractTableModel):
 
     # 返回一行
     def get_a_row(self, row):
-        print(self._df.iloc[row])
+        return (self._df.iloc[row])
 
     def command_res(self, list):
         for i in len(list):
