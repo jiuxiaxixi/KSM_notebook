@@ -9,30 +9,57 @@ class Widget(QtWidgets.QWidget):
     timer = QtCore.QTimer()
     timer2 = QtCore.QTimer()
     def __init__(self, parent=None):
-        self.kc = KsmCommand('6000.xlsx')
+        self.kc = KsmCommand('6000.xlsx') # 读取配置信息
         self.fileisLoad = False
         QtWidgets.QWidget.__init__(self, parent=None)
         v_layout = QtWidgets.QVBoxLayout(self)
         h_layout = QtWidgets.QHBoxLayout()
         self.pathLE = QtWidgets.QLineEdit(self)
         h_layout.addWidget(self.pathLE)
-        self.loadBtn = QtWidgets.QPushButton("choose", self)
+        self.loadBtn = QtWidgets.QPushButton("选择文件", self)
         h_layout.addWidget(self.loadBtn)
         v_layout.addLayout(h_layout)
         self.pandasTv = QtWidgets.QTableView(self)
         v_layout.addWidget(self.pandasTv)
-        self.commandTransLE = QtWidgets.QLineEdit(self)
-        v_layout.addWidget(self.commandTransLE)
-        self.autoReFlashBtn = QtWidgets.QCheckBox('flash',self)
+        self.id = QtWidgets.QLineEdit(self)
+        self.command = QtWidgets.QLineEdit(self)
+        self.id.setMaximumWidth(50)
+        self.command.setMaximumWidth(50)
+        h_layout.addWidget(self.id)
+        h_layout.addWidget(self.command)
+
+        self.autoReFlashBtn = QtWidgets.QCheckBox('自动刷新',self)
         h_layout.addWidget(self.autoReFlashBtn)
         self.loadBtn.clicked.connect(self.loadFile)
-        self.pandasTv.clicked.connect(self.cell_was_clicked)
+        self.textEdit = QtWidgets.QTextEdit()
+        self.textEdit.setBaseSize(100,100)
+        v_layout.addWidget(self.textEdit)
+
+        #self.pandasTv.clicked.connect(self.cell_was_clicked)
+        self.pandasTv.activated.connect(self.cell_was_clicked)
+        self.pandasTv.pressed.connect(self.cell_was_clicked)
+        self.pandasTv.doubleClicked.connect(self.doubleClicked_to_filter)
         self.autoReFlashBtn.stateChanged.connect(self.autoReFlashBtnCheck)
         self.timer.timeout.connect(self.update)
         self.autoReFlashBtn.toggle()
         self.horizontalHeader = self.pandasTv.horizontalHeader()
         self.horizontalHeader.sectionClicked.connect(self.on_view_horizontalHeader_sectionClicked)
         self.times = 0
+
+    def doubleClicked_to_filter(self,item):
+        data = self.model.get_a_row(item.row())
+        print(item.row(),item.column())
+        if(item.column() == 1):
+            self.id.setText(data['id'])
+            self.proxyModelid.setFilterRegExp(data['id'])
+        if (item.column() == 2):
+            self.command.setText(data['d0'])
+            self.proxyModeCommand.setFilterRegExp(data['d0'])
+        if (item.column() > 2):
+            self.id.setText("")
+            self.command.setText("")
+            self.proxyModeCommand.setFilterRegExp("")
+            self.proxyModelid.setFilterRegExp("")
 
     def on_view_horizontalHeader_sectionClicked(self, logicalIndex):
         self.logicalIndex = logicalIndex
@@ -52,20 +79,23 @@ class Widget(QtWidgets.QWidget):
 
     def on_actionAll_triggered(self):
         filterColumn = self.logicalIndex
-        self.proxyModel.setFilterRegExp("")
-        self.proxyModel.setFilterKeyColumn(filterColumn)
+        #
+        #self.proxyModel.setFilterKeyColumn(filterColumn)
 
     def loadFile(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)");
         self.pathLE.setText(fileName)
         self.f = open(fileName, 'r', encoding='utf-8')
         dataframe = CanFrame().get_dataframe_original(self.f.readlines())
-        print(dataframe['d2'].as_matrix())
+        #print(dataframe['d2'].as_matrix())
         self.model = PandasModel(dataframe)
-        self.proxyModel = QtCore.QSortFilterProxyModel()
-        self.proxyModel.setSourceModel(self.model)
-        self.pandasTv.setModel(self.proxyModel)
-        self.proxyModel.setFilterKeyColumn(2)
+        self.proxyModelid = QtCore.QSortFilterProxyModel()
+        self.proxyModelid.setSourceModel(self.model)
+        self.proxyModelid.setFilterKeyColumn(1)
+        self.proxyModeCommand = QtCore.QSortFilterProxyModel()
+        self.proxyModeCommand.setSourceModel(self.proxyModelid)
+        self.proxyModeCommand.setFilterKeyColumn(2)
+        self.pandasTv.setModel(self.proxyModeCommand)
         self.setTableSize(70, 70, 30, 40, self.pandasTv)
         self.fileisLoad = True
         self.autoFlashTimerchange()
@@ -85,8 +115,8 @@ class Widget(QtWidgets.QWidget):
 
     def cell_was_clicked(self, item):
         data=self.model.get_a_row(item.row())
-        self.commandTransLE.setText(self.kc.get_command_res(data['id'],data['d0']))
-
+        #self.commandTransLE.setText(self.kc.get_command_res(data['id'],data['d0']))
+        self.textEdit.setText(self.kc.get_command_res(data['id'],data['d0']))
     def autoReFlashBtnCheck(self):
         if(self.autoReFlashBtn.isChecked()):
            self.autoReFlashFlag = True
