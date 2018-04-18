@@ -15,6 +15,7 @@ class KsmCommand:
     # 传入ID和命令 格式化输出
     def get_command_res_lite(self, address, command,status):
         if (address, command) in self.result:
+            command_res = " "
             command_dic = self.result[address, command]
             if (status == '80'):
                 command_res = "<font color='green'> "
@@ -40,6 +41,7 @@ class KsmCommand:
 
         if (address, command) in self.result:
             command_dic = self.result[address,command]
+            command_res = " "
             if (status == '80'):
                 command_res = "<font color='green'> "
             if (status == '00'):
@@ -113,5 +115,3 @@ class KsmCommand:
 
 
 
-
-#print(kc.get_command_res('<00-80>', '09'))

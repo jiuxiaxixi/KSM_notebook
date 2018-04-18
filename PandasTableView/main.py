@@ -115,7 +115,11 @@ class Widget(QtWidgets.QWidget):
     def update(self):
         data = self.f.readlines()
         if len(data) > 0:
-            self.model.updateDisplay(CanFrame().get_dataframe_original(data))
+            dataframe= CanFrame().get_dataframe_original(data)
+            self.model.updateDisplay(dataframe)
+            for index, row in dataframe.iterrows():
+                self.textEdit.append(self.kc.get_command_res_lite(row['id'], row['d0'], row['d1']))
+
             self.pandasTv.scrollToBottom()
 
 
