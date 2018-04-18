@@ -13,15 +13,59 @@ class KsmCommand:
         return xlrd.open_workbook(file_path)
 
     # 传入ID和命令 格式化输出
-    def get_command_res(self, address, command):
+    def get_command_res_lite(self, address, command,status):
         if (address, command) in self.result:
-            command_dic = self.result[address,command]
-            command_res = command_dic['card']+' '+command_dic['module']+' '+command_dic['action']+' '+command_dic['description']
+            command_dic = self.result[address, command]
+            if (status == '80'):
+                command_res = "<font color='green'> "
+            if (status == '00'):
+                command_res = "<font color='red'> "
+
+            command_res = command_res + command_dic['card'] + ' ' + command_dic['module'] + ' ' + command_dic['action']
+            if (status == '80'):
+                command_res = command_res + " 成功"
+            if (status == '00'):
+                command_res = command_res + "失败"
+
+            if (status == '80'):
+                command_res = command_res + "</font>"
+            if (status == '00'):
+                command_res = command_res + "</font>"
             return command_res
         else:
-            return "未在配置中查询到该命令"
+            return "未在配置中查询到该命令 " + address +' '+ command
 
 
+    def get_command_res(self, address, command, status):
+
+        if (address, command) in self.result:
+            command_dic = self.result[address,command]
+            if (status == '80'):
+                command_res = "<font color='green'> "
+            if (status == '00'):
+                command_res = "<font color='red'> "
+
+            command_res = command_res + command_dic['card']+' '+command_dic['module']+' '+command_dic['action']
+            if( status == '80'):
+                command_res = command_res + " 成功"
+            if (status == '00'):
+                command_res = command_res +  "失败"
+
+            if (status == '80'):
+                command_res = command_res + "</font>"
+            if (status == '00'):
+                command_res = command_res + "</font>"
+
+            command_res = command_res + ' ' + "<br />参数说明：<br /> "
+
+            if(command_dic['description'] == ""):
+                command_res = command_res + "无"
+            else:
+                command_res = command_res + command_dic['description']
+
+            return command_res
+        else:
+            return "未在配置中查询到该命令" + address + command
 
     def Excel2Json(self, book):
         # 打开excel文件

@@ -1,5 +1,4 @@
 from PyQt5 import QtCore, QtWidgets
-
 from PandasModel import PandasModel
 from KsmCommand import  KsmCommand
 from CanFrame import CanFrame
@@ -32,7 +31,7 @@ class Widget(QtWidgets.QWidget):
         h_layout.addWidget(self.autoReFlashBtn)
         self.loadBtn.clicked.connect(self.loadFile)
         self.textEdit = QtWidgets.QTextEdit()
-        self.textEdit.setBaseSize(100,100)
+        self.textEdit.setMaximumHeight(100)
         v_layout.addWidget(self.textEdit)
 
         #self.pandasTv.clicked.connect(self.cell_was_clicked)
@@ -42,8 +41,6 @@ class Widget(QtWidgets.QWidget):
         self.autoReFlashBtn.stateChanged.connect(self.autoReFlashBtnCheck)
         self.timer.timeout.connect(self.update)
         self.autoReFlashBtn.toggle()
-        self.horizontalHeader = self.pandasTv.horizontalHeader()
-        self.horizontalHeader.sectionClicked.connect(self.on_view_horizontalHeader_sectionClicked)
         self.times = 0
 
     def doubleClicked_to_filter(self,item):
@@ -61,26 +58,6 @@ class Widget(QtWidgets.QWidget):
             self.proxyModeCommand.setFilterRegExp("")
             self.proxyModelid.setFilterRegExp("")
 
-    def on_view_horizontalHeader_sectionClicked(self, logicalIndex):
-        self.logicalIndex = logicalIndex
-        self.menuValues = QtWidgets.QMenu()
-
-        actionAll = QtWidgets.QAction("All",self)
-        actionAll.triggered.connect(self.on_actionAll_triggered)
-        self.menuValues.addAction(actionAll)
-        self.menuValues.addSeparator()
-
-        headerPos = self.pandasTv.mapToGlobal(self.horizontalHeader.pos())
-
-        posY = headerPos.y() + self.horizontalHeader.height()
-        posX = headerPos.x() + self.horizontalHeader.sectionPosition(self.logicalIndex)
-        print(posX, posY)
-        self.menuValues.exec_(QtCore.QPoint(posX, posY))
-
-    def on_actionAll_triggered(self):
-        filterColumn = self.logicalIndex
-        #
-        #self.proxyModel.setFilterKeyColumn(filterColumn)
 
     def loadFile(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)");
@@ -116,7 +93,8 @@ class Widget(QtWidgets.QWidget):
     def cell_was_clicked(self, item):
         data=self.model.get_a_row(item.row())
         #self.commandTransLE.setText(self.kc.get_command_res(data['id'],data['d0']))
-        self.textEdit.setText(self.kc.get_command_res(data['id'],data['d0']))
+        self.textEdit.setText(self.kc.get_command_res(data['id'],data['d0'],data['d1']))
+
     def autoReFlashBtnCheck(self):
         if(self.autoReFlashBtn.isChecked()):
            self.autoReFlashFlag = True
