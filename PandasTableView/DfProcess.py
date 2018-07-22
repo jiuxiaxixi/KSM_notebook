@@ -27,3 +27,5 @@ class DfProcess:
         temp_df = self.filter1_df(column1, value1, df_filter)
         return self.filter1_df(column2, value2, temp_df)
 
+    def save_to_text(self, filename, df=pd.DataFrame()):
+        df.to_csv(filename, header=False, index=False, sep='\t', mode='a')

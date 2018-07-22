@@ -2,6 +2,8 @@ from PyQt5 import QtCore, QtWidgets
 from PandasModel import PandasModel
 from KsmCommand import  KsmCommand
 from CanFrame import  CanFrame
+import datetime
+from DfProcess import DfProcess
 
 class Widget(QtWidgets.QWidget):
     timer = QtCore.QTimer()
@@ -14,7 +16,9 @@ class Widget(QtWidgets.QWidget):
         self.pathLE = QtWidgets.QLineEdit(self)
         h_layout.addWidget(self.pathLE)
         self.loadBtn = QtWidgets.QPushButton("选择文件", self)
+        self.saveBtn = QtWidgets.QPushButton("保存", self)
         h_layout.addWidget(self.loadBtn)
+        h_layout.addWidget(self.saveBtn)
         v_layout.addLayout(h_layout)
         self.pandasTv = QtWidgets.QTableView(self)
         v_layout.addWidget(self.pandasTv)
@@ -28,6 +32,7 @@ class Widget(QtWidgets.QWidget):
         self.autoReFlashBtn = QtWidgets.QCheckBox('自动刷新',self)
         h_layout.addWidget(self.autoReFlashBtn)
         self.loadBtn.clicked.connect(self.load_file)
+        self.saveBtn.clicked.connect(self.save_file)
         self.textEdit = QtWidgets.QTextEdit()
         self.textEdit.setMaximumHeight(100)
         v_layout.addWidget(self.textEdit)
@@ -62,14 +67,23 @@ class Widget(QtWidgets.QWidget):
 
     def load_file(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)")
-        self.pathLE.setText(filename)
-        self.f = open(filename, 'r', encoding='utf-8')
-        self.model = PandasModel(CanFrame().get_dataframe_original(self.f.readlines()))
-        self.pandasTv.setModel(self.model)
-        self.setTableSize(70, 70, 30, 40, self.pandasTv)
-        self.fileisLoad = True
-        self.autoFlashTimerchange()
-        self.pandasTv.scrollToBottom()
+        if filename != '':
+            self.pathLE.setText(filename)
+            self.f = open(filename, 'r', encoding='utf-8')
+            self.model = PandasModel(CanFrame().get_dataframe_original(self.f.readlines()))
+            self.pandasTv.setModel(self.model)
+            self.setTableSize(70, 70, 30, 40, self.pandasTv)
+            self.fileisLoad = True
+            self.autoFlashTimerchange()
+            self.pandasTv.scrollToBottom()
+
+    def save_file(self):
+        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", time, "txt Files (*.txt)")
+        print(filename)
+        if filename != '':
+            df = self.model.getDateFrame()
+            DfProcess().save_to_text(filename, df)
 
     def setTableSize(self, timeSize, idSize, dataSize, countSize, table):
         table.setColumnWidth(0, timeSize)
