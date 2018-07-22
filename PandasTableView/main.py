@@ -1,12 +1,10 @@
 from PyQt5 import QtCore, QtWidgets
 from PandasModel import PandasModel
 from KsmCommand import  KsmCommand
-from CanFrame import CanFrame
-
+from CanFrame import  CanFrame
 
 class Widget(QtWidgets.QWidget):
     timer = QtCore.QTimer()
-    timer2 = QtCore.QTimer()
     def __init__(self, parent=None):
         self.kc = KsmCommand('6000.xlsx') # 读取配置信息
         self.fileisLoad = False
@@ -29,50 +27,45 @@ class Widget(QtWidgets.QWidget):
 
         self.autoReFlashBtn = QtWidgets.QCheckBox('自动刷新',self)
         h_layout.addWidget(self.autoReFlashBtn)
-        self.loadBtn.clicked.connect(self.loadFile)
+        self.loadBtn.clicked.connect(self.load_file)
         self.textEdit = QtWidgets.QTextEdit()
         self.textEdit.setMaximumHeight(100)
         v_layout.addWidget(self.textEdit)
 
-        #self.pandasTv.clicked.connect(self.cell_was_clicked)
         self.pandasTv.activated.connect(self.cell_was_clicked)
         self.pandasTv.pressed.connect(self.cell_was_clicked)
-        self.pandasTv.doubleClicked.connect(self.doubleClicked_to_filter)
+        self.pandasTv.doubleClicked.connect(self.double_clicked_to_filter)
         self.autoReFlashBtn.stateChanged.connect(self.autoReFlashBtnCheck)
         self.timer.timeout.connect(self.update)
         self.autoReFlashBtn.toggle()
+        self.id.textChanged.connect(self.filter_set)
+        self.command.textChanged.connect(self.filter_set)
         self.times = 0
 
-    def doubleClicked_to_filter(self,item):
+    def filter_set(self):
+        #print(self.id.text(), self.command.text())
+        self.model.setfilter(self.id.text(), self.command.text())
+
+
+    def double_clicked_to_filter(self,item):
         data = self.model.get_a_row(item.row())
-        print(item.row(),item.column())
-        if(item.column() == 1):
+        if item.column() == 1:
             self.id.setText(data['id'])
-            self.proxyModelid.setFilterRegExp(data['id'])
-        if (item.column() == 2):
+
+        if item.column() == 2:
             self.command.setText(data['d0'])
-            self.proxyModeCommand.setFilterRegExp(data['d0'])
-        if (item.column() > 2):
+
+        if item.column() > 2:
             self.id.setText("")
             self.command.setText("")
-            self.proxyModeCommand.setFilterRegExp("")
-            self.proxyModelid.setFilterRegExp("")
 
 
-    def loadFile(self):
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)");
-        self.pathLE.setText(fileName)
-        self.f = open(fileName, 'r', encoding='utf-8')
-        dataframe = CanFrame().get_dataframe_original(self.f.readlines())
-        #print(dataframe['d2'].as_matrix())
-        self.model = PandasModel(dataframe)
-        self.proxyModelid = QtCore.QSortFilterProxyModel()
-        self.proxyModelid.setSourceModel(self.model)
-        self.proxyModelid.setFilterKeyColumn(1)
-        self.proxyModeCommand = QtCore.QSortFilterProxyModel()
-        self.proxyModeCommand.setSourceModel(self.proxyModelid)
-        self.proxyModeCommand.setFilterKeyColumn(2)
-        self.pandasTv.setModel(self.proxyModeCommand)
+    def load_file(self):
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "txt Files (*.txt)")
+        self.pathLE.setText(filename)
+        self.f = open(filename, 'r', encoding='utf-8')
+        self.model = PandasModel(CanFrame().get_dataframe_original(self.f.readlines()))
+        self.pandasTv.setModel(self.model)
         self.setTableSize(70, 70, 30, 40, self.pandasTv)
         self.fileisLoad = True
         self.autoFlashTimerchange()
@@ -89,33 +82,32 @@ class Widget(QtWidgets.QWidget):
 
         self.pandasTv.scrollToBottom()
 
-
     def cell_was_clicked(self, item):
         data=self.model.get_a_row(item.row())
-        #self.commandTransLE.setText(self.kc.get_command_res(data['id'],data['d0']))
+        #print(data)
         self.textEdit.setText(self.kc.get_command_res(data['id'],data['d0'],data['d1']))
 
     def autoReFlashBtnCheck(self):
-        if(self.autoReFlashBtn.isChecked()):
+        if self.autoReFlashBtn.isChecked():
            self.autoReFlashFlag = True
-
         else:
             self.autoReFlashFlag = False
-        if(self.fileisLoad):
+
+        if self.fileisLoad:
             self.autoFlashTimerchange()
 
-
     def autoFlashTimerchange(self):
-        if(self.autoReFlashFlag):
+        if self.autoReFlashFlag:
             self.timer.start(100)
         else:
-            if(self.timer.isActive()):
+            if self.timer.isActive():
                 self.timer.stop()
 
     def update(self):
         data = self.f.readlines()
         if len(data) > 0:
-            dataframe= CanFrame().get_dataframe_original(data)
+            print(data)
+            dataframe = CanFrame().get_dataframe_original(data)
             self.model.updateDisplay(dataframe)
             for index, row in dataframe.iterrows():
                 self.textEdit.append(self.kc.get_command_res_lite(row['id'], row['d0'], row['d1']))
@@ -123,7 +115,7 @@ class Widget(QtWidgets.QWidget):
             self.pandasTv.scrollToBottom()
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     w = Widget()
