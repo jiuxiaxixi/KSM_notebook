@@ -4,6 +4,8 @@ from KsmCommand import  KsmCommand
 from CanFrame import  CanFrame
 import datetime
 from DfProcess import DfProcess
+import pyqtgraph as pg
+import numpy as np
 
 class Widget(QtWidgets.QWidget):
     timer = QtCore.QTimer()
@@ -46,6 +48,17 @@ class Widget(QtWidgets.QWidget):
         self.id.textChanged.connect(self.filter_set)
         self.command.textChanged.connect(self.filter_set)
         self.times = 0
+
+        self.view = pg.GraphicsView()
+        self.layout = pg.GraphicsLayout(border=(100, 100, 100))
+        self.view.show()
+        self.view.setCentralItem(self.layout)
+        self.view.show()
+        self.view.setWindowTitle('Software Oscilloscope')
+        self.view.resize(800,600)
+        self.plot = self.layout.addPlot()
+        self.plot.plot(np.zeros(250))
+        self.layout.nextRow()
 
     def filter_set(self):
         #print(self.id.text(), self.command.text())
