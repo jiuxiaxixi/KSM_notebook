@@ -2,13 +2,14 @@ from PyQt5 import QtCore, QtWidgets
 from PandasModel import PandasModel
 from KsmCommand import  KsmCommand
 from CanFrame import CanFrame
-
+import sys
+import os
 
 class Widget(QtWidgets.QWidget):
     timer = QtCore.QTimer()
     timer2 = QtCore.QTimer()
     def __init__(self, parent=None):
-        self.kc = KsmCommand('6000.xlsx') # 读取配置信息
+        self.kc = KsmCommand('配置.xlsx') # 读取配置信息
         self.fileisLoad = False
         QtWidgets.QWidget.__init__(self, parent=None)
         v_layout = QtWidgets.QVBoxLayout(self)
@@ -64,7 +65,6 @@ class Widget(QtWidgets.QWidget):
         self.pathLE.setText(fileName)
         self.f = open(fileName, 'r', encoding='utf-8')
         dataframe = CanFrame().get_dataframe_original(self.f.readlines())
-        #print(dataframe['d2'].as_matrix())
         self.model = PandasModel(dataframe)
         self.proxyModelid = QtCore.QSortFilterProxyModel()
         self.proxyModelid.setSourceModel(self.model)
@@ -77,6 +77,28 @@ class Widget(QtWidgets.QWidget):
         self.fileisLoad = True
         self.autoFlashTimerchange()
         self.pandasTv.scrollToBottom()
+
+
+    def commandLoadFile(self,fileName):
+
+        if os.access(fileName, os.F_OK):
+            self.pathLE.setText(fileName)
+            self.f = open(fileName, 'r', encoding='utf-8')
+            dataframe = CanFrame().get_dataframe_original(self.f.readlines())
+            self.model = PandasModel(dataframe)
+            self.proxyModelid = QtCore.QSortFilterProxyModel()
+            self.proxyModelid.setSourceModel(self.model)
+            self.proxyModelid.setFilterKeyColumn(1)
+            self.proxyModeCommand = QtCore.QSortFilterProxyModel()
+            self.proxyModeCommand.setSourceModel(self.proxyModelid)
+            self.proxyModeCommand.setFilterKeyColumn(2)
+            self.pandasTv.setModel(self.proxyModeCommand)
+            self.setTableSize(70, 70, 30, 40, self.pandasTv)
+            self.fileisLoad = True
+            self.autoFlashTimerchange()
+            self.pandasTv.scrollToBottom()
+        else:
+            self.pathLE.setText(fileName+"文件不存在")
 
     def setTableSize(self, timeSize, idSize, dataSize, countSize, table):
         table.setColumnWidth(0, timeSize)
@@ -122,10 +144,23 @@ class Widget(QtWidgets.QWidget):
 
             self.pandasTv.scrollToBottom()
 
+    def get_current_path(self):
+        paths = sys.path
+        current_file = os.path.basename(__file__)
+        for path in paths:
+            try:
+                if current_file in os.listdir(path):
+                    self.current_path = path
+                    break
+            except (FileExistsError, FileNotFoundError) as e:
+                print(e)
 
 if __name__=="__main__":
-    import sys
+    print()
     app = QtWidgets.QApplication(sys.argv)
     w = Widget()
     w.show()
+    if(len(sys.argv)==2):
+        file = sys.argv[1]
+        w.commandLoadFile(file)
     sys.exit(app.exec_())
