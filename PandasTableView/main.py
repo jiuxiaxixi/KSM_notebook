@@ -1,11 +1,13 @@
+import pyqtgraph as pg
+import numpy as np
+import sys
+import os
+import datetime
 from PyQt5 import QtCore, QtWidgets
 from PandasModel import PandasModel
 from KsmCommand import  KsmCommand
 from CanFrame import  CanFrame
-import datetime
 from DfProcess import DfProcess
-import pyqtgraph as pg
-import numpy as np
 
 class Widget(QtWidgets.QWidget):
     timer = QtCore.QTimer()
@@ -19,6 +21,7 @@ class Widget(QtWidgets.QWidget):
         h_layout.addWidget(self.pathLE)
         self.loadBtn = QtWidgets.QPushButton("选择文件", self)
         self.saveBtn = QtWidgets.QPushButton("保存", self)
+        self.drawBtn = QtWidgets.QPushButton("绘图",self)
         h_layout.addWidget(self.loadBtn)
         h_layout.addWidget(self.saveBtn)
         v_layout.addLayout(h_layout)
@@ -30,11 +33,13 @@ class Widget(QtWidgets.QWidget):
         self.command.setMaximumWidth(50)
         h_layout.addWidget(self.id)
         h_layout.addWidget(self.command)
+        h_layout.addWidget(self.drawBtn)
 
         self.autoReFlashBtn = QtWidgets.QCheckBox('自动刷新',self)
         h_layout.addWidget(self.autoReFlashBtn)
         self.loadBtn.clicked.connect(self.load_file)
         self.saveBtn.clicked.connect(self.save_file)
+        self.drawBtn.clicked.connect(self.draw_filter_value)
         self.textEdit = QtWidgets.QTextEdit()
         self.textEdit.setMaximumHeight(100)
         v_layout.addWidget(self.textEdit)
@@ -43,22 +48,29 @@ class Widget(QtWidgets.QWidget):
         self.pandasTv.pressed.connect(self.cell_was_clicked)
         self.pandasTv.doubleClicked.connect(self.double_clicked_to_filter)
         self.autoReFlashBtn.stateChanged.connect(self.autoReFlashBtnCheck)
+
         self.timer.timeout.connect(self.update)
         self.autoReFlashBtn.toggle()
         self.id.textChanged.connect(self.filter_set)
         self.command.textChanged.connect(self.filter_set)
         self.times = 0
 
-        self.view = pg.GraphicsView()
-        self.layout = pg.GraphicsLayout(border=(100, 100, 100))
-        self.view.show()
-        self.view.setCentralItem(self.layout)
-        self.view.show()
-        self.view.setWindowTitle('Software Oscilloscope')
-        self.view.resize(800,600)
-        self.plot = self.layout.addPlot()
-        self.plot.plot(np.zeros(250))
-        self.layout.nextRow()
+
+
+    def draw_filter_value(self):
+        if self.id !=' ' and self.command != ' ':
+            self.view = pg.GraphicsView()
+            self.layout = pg.GraphicsLayout(border=(100, 100, 100))
+            self.view.setCentralItem(self.layout)
+            self.view.setWindowTitle('Software Oscilloscope')
+            self.view.resize(800, 600)
+            self.plot = self.layout.addPlot()
+            #print()
+            np=DfProcess().numpy_merge(self.model.getDateFrame(), 'd2', 'd3')
+            #print(np)
+            self.plot.plot(np)
+            self.layout.nextRow()
+            self.view.show()
 
     def filter_set(self):
         #print(self.id.text(), self.command.text())
@@ -91,7 +103,7 @@ class Widget(QtWidgets.QWidget):
             self.pandasTv.scrollToBottom()
 
     def save_file(self):
-        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", time, "txt Files (*.txt)")
         print(filename)
         if filename != '':
@@ -141,10 +153,32 @@ class Widget(QtWidgets.QWidget):
 
             self.pandasTv.scrollToBottom()
 
+    def commandLoadFile(self,fileName):
 
-if __name__ == "__main__":
-    import sys
+        if os.access(fileName, os.F_OK):
+            self.pathLE.setText(fileName)
+            self.f = open(fileName, 'r', encoding='utf-8')
+            dataframe = CanFrame().get_dataframe_original(self.f.readlines())
+            self.model = PandasModel(dataframe)
+            self.proxyModelid = QtCore.QSortFilterProxyModel()
+            self.proxyModelid.setSourceModel(self.model)
+            self.proxyModelid.setFilterKeyColumn(1)
+            self.proxyModeCommand = QtCore.QSortFilterProxyModel()
+            self.proxyModeCommand.setSourceModel(self.proxyModelid)
+            self.proxyModeCommand.setFilterKeyColumn(2)
+            self.pandasTv.setModel(self.proxyModeCommand)
+            self.setTableSize(70, 70, 30, 40, self.pandasTv)
+            self.fileisLoad = True
+            self.autoFlashTimerchange()
+            self.pandasTv.scrollToBottom()
+        else:
+            self.pathLE.setText(fileName+"文件不存在")
+
+if __name__=="__main__":
     app = QtWidgets.QApplication(sys.argv)
     w = Widget()
     w.show()
+    if(len(sys.argv)==2):
+        file = sys.argv[1]
+        w.commandLoadFile(file)
     sys.exit(app.exec_())
